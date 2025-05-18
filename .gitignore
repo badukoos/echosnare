@@ -1,0 +1,29 @@
+# Python virtual environments
+.venv/
+venv/
+
+# Environment variable files
+.env
+
+# Byte-compiled/cached files etc
+__pycache__/
+*.py[cod]
+*$py.class
+lib/
+
+# Distribution/packaging
+build/
+dist/
+*.egg-info/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VSCode settings
+.vscode/
+
+# Misc
+*.dpy
+scratchpad
+data/**/*.json
+!data/config/*.json

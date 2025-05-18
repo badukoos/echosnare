@@ -1,0 +1,44 @@
+[
+  {
+    "content_hash": "9c0f5c951688f7e117bf5663b7d3e764b783583eb73fdcce7af0ec844e655311",
+    "reused_on": [
+      {
+        "domain": "uniindia.com",
+        "label": "unclassified"
+      },
+      {
+        "domain": "uniindia.com",
+        "label": "unclassified"
+      }
+    ],
+    "issue": "High frequency reuse"
+  },
+  {
+    "content_hash": "c94f026ec68b6711b6552dc86bbce7367993d94c6516dbb93c9a01d22cb19947",
+    "reused_on": [
+      {
+        "domain": "bignewsnetwork.com",
+        "label": "unclassified"
+      },
+      {
+        "domain": "bignewsnetwork.com",
+        "label": "unclassified"
+      }
+    ],
+    "issue": "High frequency reuse"
+  },
+  {
+    "content_hash": "002e0f00f3b9b1ab2c61ec96fd2d2a4394875f395540c30b9a570aacac767ffb",
+    "reused_on": [
+      {
+        "domain": "nexusnewsfeed.com",
+        "label": "unclassified"
+      },
+      {
+        "domain": "nexusnewsfeed.com",
+        "label": "unclassified"
+      }
+    ],
+    "issue": "High frequency reuse"
+  }
+]

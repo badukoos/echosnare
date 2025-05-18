@@ -1,0 +1,14 @@
+requests
+beautifulsoup4
+lxml
+lxml_html_clean
+scikit-learn
+sentence-transformers
+newspaper3k
+google-api-python-client
+fuzzywuzzy[speedup]
+huggingface_hub[hf_xet]
+pyvis
+python-whois
+python-dotenv
+tldextract

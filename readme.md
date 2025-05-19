@@ -4,7 +4,7 @@
 **EchoSnare** is an OSINT tool built to track the amplification of propaganda or misinformation by fringe and coordinated websites that launder narratives across low-credibility sources. The project focuses on:
 
 - Tracing the reuse of content from original articles
-- Identifying narrative amplification through search engines (currently supporting DuckDuckGo an- Google)
+- Identifying narrative amplification through search engines (currently supporting DuckDuckGo and Google)
 - Extracting and comparing article content
 - Labeling and enriching source domain data
 - Analyzing content reuse frequency and associated metadata
@@ -34,18 +34,20 @@ Search and match similar articles using search engines.
 PYTHONPATH=src python src/crawler/echo_spider.py \
       "https://www.rt.com/india/617713-west-pitting-india-against-china/" \
       --engine google \
-      --threshold=0.8 \ # Ensures that only articles with 80% or more similarity to the seed article are selected
-      --delay=10 # Adds a 10-second pause between requests to avoid overwhelming the search engine and prevent being blocked.
+      # Ensures that only articles with 80% or more similarity to the seed article are selected
+      --threshold=0.8 \
+      # Adds a 5 second pause between requests to avoid overwhelming the search engine (esp for duckduckgo)
+      --delay=5
 ```
 
 **Output:**
-`data/crawled/matches_duckduckgo.json` - articles similar to the seed.
+`data/crawled/matches_google.json` - articles similar to the seed.
 
 ---
 
 ### 2. Label Matched Articles Using Known Source Labels
 
-Assign credibility labels like `credible`, `state-sponsored`, or `conspiratorial`.
+Assign credibility labels like `credible`, `state-sponsored`, `conspiratorial` or `unclassified`.
 
 ```bash
 python scripts/enrich_with_labels.py \
@@ -115,17 +117,27 @@ python scripts/enrich_domains.py
 ```
 
 **Output:**
-Enriched metadata file:
+Enriched metadata file example:
 ```json
 {
-  "example.com": {
-    "whois": {
-      "registrar": "GoDaddy",
-      "org": "Domains By Proxy"
-    },
-    "crtsh_subdomains": [...],
-    "subfinder_subdomains": [...]
-  }
+     "fringe-news.co": {
+       "subfinder_subdomains": [
+         "cdn.fringe-news.co",
+         "feeds.fringe-news.co"
+         "www.fringe-news.co"
+       ],
+       "crtsh_subdomains": [
+         "*.fringe-news.co"
+       ],
+       "whois": {
+         "registrar": "GoDaddy.com, LLC",
+         "creation_date": "[...]",
+         "emails": [
+           "abuse@godaddy.com"
+         ],
+         "org": "Domains By Proxy, LLC"
+       }
+   }
 }
 ```
 

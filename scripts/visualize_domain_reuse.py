@@ -22,7 +22,6 @@ def visualize():
         "unclassified": "gray"
     }
 
-    # Group anomalies by issue type
     grouped = defaultdict(list)
     for entry in anomalies:
         grouped[entry["issue"]].append(entry)

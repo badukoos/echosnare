@@ -3,16 +3,14 @@ import os
 from collections import defaultdict
 
 INPUT_PATH = "data/analysis/reuse_map.json"
-LABELS_PATH = "data/output/new_source_labels.json"  # or "data/config/source_labels.json"
+LABELS_PATH = "data/output/new_source_labels.json"
 OUTPUT_PATH = "data/analysis/reuse_anomalies.json"
 
 os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
 
-# Load reuse map
 with open(INPUT_PATH, "r", encoding="utf-8") as f:
     reuse_map = json.load(f)
 
-# Load domain labels
 with open(LABELS_PATH, "r", encoding="utf-8") as f:
     domain_labels = json.load(f)
 

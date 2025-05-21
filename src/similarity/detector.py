@@ -1,9 +1,6 @@
-# similarity/detector.py
-
 from sentence_transformers import SentenceTransformer, util
 from fuzzywuzzy import fuzz
 
-# Load model once when imported
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 def compute_semantic_similarity(text1: str, text2: str) -> float:

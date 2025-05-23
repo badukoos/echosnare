@@ -22,3 +22,16 @@ def is_match(text1: str, text2: str, threshold: float = 0.8) -> tuple[bool, floa
     fuzzy = compute_fuzzy_ratio(text1, text2)
     score = (semantic + fuzzy) / 2
     return score >= threshold, round(score, 3)
+
+# if __name__ == "__main__":
+#     import sys
+#     if len(sys.argv) < 3:
+#         print("Usage: python script.py 'text1' 'text2' [threshold]")
+#         sys.exit(1)
+
+#     text1 = sys.argv[1]
+#     text2 = sys.argv[2]
+#     threshold = float(sys.argv[3]) if len(sys.argv) > 3 else 0.8
+
+#     match, score = is_match(text1, text2, threshold)
+#     print(f"Match: {match}, Score: {score}")

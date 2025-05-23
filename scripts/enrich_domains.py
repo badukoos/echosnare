@@ -45,20 +45,40 @@ def fetch_crtsh(domain):
         resp = requests.get(url, timeout=10)
         if resp.status_code == 200:
             certs = resp.json()
-            return list(set(c["name_value"] for c in certs if domain in c["name_value"]))
+            results = []
+            seen_serials = set()
+
+            for cert in certs:
+                serial = cert.get("serial_number")
+                if not serial or serial in seen_serials:
+                    continue
+                seen_serials.add(serial)
+
+                name_value = cert.get("name_value", "")
+                domains = list(set(name_value.split("\n")))
+                results.append({
+                    "serial_number": serial,
+                    "domains": domains,
+                    "entry_timestamp": cert.get("entry_timestamp"),
+                    "not_before": cert.get("not_before"),
+                    "not_after": cert.get("not_after"),
+                    "issuer_name": cert.get("issuer_name")
+                })
+            return results
     except Exception as e:
         print(f"[!] crt.sh lookup failed for {domain}: {e}")
     return []
 
+
 def enrich_domain(domain):
     print(f"[*] Enriching: {domain}")
     subdomains = run_subfinder(domain)
-    crtsh_subs = fetch_crtsh(domain)
+    crtsh_certs = fetch_crtsh(domain)
     whois_info = fetch_whois(domain)
 
     return {
         "subfinder_subdomains": subdomains,
-        "crtsh_subdomains": crtsh_subs,
+        "crtsh_certificates": crtsh_certs,
         "whois": whois_info
     }
 

@@ -27,3 +27,4 @@ dist/
 scratchpad
 data/**/*.json
 !data/config/*.json
+echosnare.code-workspace

@@ -111,8 +111,8 @@ python scripts/detect_reuse_anomalies.py
 Fetch **basic** metadata for each domain using
 
  - Subfinder (for discovering subdomains)
- - WHOIS (registrar, creation date, contact info, org)
- - crt.sh (certificate transparency logs - issuer, SANs, serial numbers)
+ - WHOIS (registrar, creation date, contact info, org). Only current info, WHOIS history might be included in the future.
+ - crt.sh (from certificate transparency logs - issuer, SANs, serial numbers, also generates a reverse SAN index).
 
 ```bash
 python scripts/enrich_domains.py
@@ -122,25 +122,36 @@ python scripts/enrich_domains.py
 Enriched metadata file example:
 ```json
 {
-     "fringe-news.co": {
-       "subfinder_subdomains": [
-         "cdn.fringe-news.co",
-         "feeds.fringe-news.co"
-         "www.fringe-news.co"
-       ],
-       "crtsh_subdomains": [
-         "*.fringe-news.co"
-       ],
-       "whois": {
-         "registrar": "GoDaddy.com, LLC",
-         "creation_date": "[...]",
-         "emails": [
-           "abuse@godaddy.com"
-         ],
-         "org": "Domains By Proxy, LLC"
-       }
-   }
+  "fringe-news.co": {
+    "subfinder_subdomains": [
+      "cdn.fringe-news.co",
+      "feeds.fringe-news.co",
+      "www.fringe-news.co"
+    ],
+    "crtsh_certificates": [
+      {
+        "serial_number": "04a5d7...",
+        "not_before": "2024-02-01T00:00:00",
+        "not_after": "2025-02-01T23:59:59",
+        "issuer": "CN=Let's Encrypt Authority X3,O=Let's Encrypt,C=US",
+        "subject_common_name": "CN=fringe-news.co",
+        "san_domains": [
+          "fringe-news.co",
+          "www.fringe-news.co"
+        ]
+      }
+    ],
+    "whois": {
+      "registrar": "GoDaddy.com, LLC",
+      "creation_date": "2000-07-04 21:01:21",
+      "emails": [
+        "abuse@godaddy.com"
+      ],
+      "org": "Domains By Proxy, LLC"
+    }
+  }
 }
+
 ```
 >  - Install [`subfinder`](https://github.com/projectdiscovery/subfinder) for this to work properly.<br>
 >  - Certificate downloads from [`crt.sh`](https://crt.sh) are rate-limited to [5 per minute at the moment](https://groups.google.com/g/crtsh/c/QXQFoy331pE).<br>

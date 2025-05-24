@@ -34,10 +34,8 @@ Search and match similar articles using search engines.
 PYTHONPATH=src python src/crawler/echo_spider.py \
       "https://www.rt.com/india/617713-west-pitting-india-against-china/" \
       --engine google \
-      # Ensures that only articles with 80% or more similarity to the seed article are selected
-      --threshold=0.8 \
-      # Adds a 5 second pause between requests to avoid overwhelming the search engine (esp for duckduckgo)
-      --delay=5
+      --threshold=0.8 \ # Ensures that only articles with 80% or more similarity to the seed article are selected.
+      --delay=10 # Adds a 10 second pause between requests to avoid overwhelming the search engine (esp for duckduckgo, longer delay is required)
 ```
 
 **Output:**
@@ -110,7 +108,11 @@ python scripts/detect_reuse_anomalies.py
 ---
 ### 7. Enrich Domains with WHOIS and Subdomain Info
 
-Fetch **basic** metadata for each domain using `whois`, `crt.sh`, and `subfinder`.
+Fetch **basic** metadata for each domain using
+
+ - Subfinder (for discovering subdomains)
+ - WHOIS (registrar, creation date, contact info, org)
+ - crt.sh (certificate transparency logs - issuer, SANs, serial numbers)
 
 ```bash
 python scripts/enrich_domains.py
@@ -140,8 +142,10 @@ Enriched metadata file example:
    }
 }
 ```
+>  - Install [`subfinder`](https://github.com/projectdiscovery/subfinder) for this to work properly.<br>
+>  - Certificate downloads from [`crt.sh`](https://crt.sh) are rate-limited to [5 per minute at the moment](https://groups.google.com/g/crtsh/c/QXQFoy331pE).<br>
+>  - Only 1 unique certificate per domain are processed (tunable via `MAX_CERTS`).
 
-> Note: Install `subfinder` for this to work properly.
 
 ---
 

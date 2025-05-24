@@ -12,3 +12,4 @@ pyvis
 python-whois
 python-dotenv
 tldextract
+cryptography

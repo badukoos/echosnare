@@ -4,8 +4,6 @@ import os
 import json
 import difflib
 from newspaper import Article
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 from search_engines import (
     search_duckduckgo, search_google_cse

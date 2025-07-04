@@ -13,3 +13,4 @@ python-whois
 python-dotenv
 tldextract
 cryptography
+tldextract

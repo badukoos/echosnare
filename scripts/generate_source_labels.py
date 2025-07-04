@@ -1,37 +1,143 @@
+#!/usr/bin/env python3
+"""
+Generate domain labels from crawl data and existing labels.
+Creates a new labels file with domains from crawl data and their classifications.
+"""
+
 import json
 import sys
+import argparse
+from pathlib import Path
+from typing import Dict, Set, Any
 import tldextract
 
-def extract_domain(url):
-    extracted = tldextract.extract(url)
-    return f"{extracted.domain}.{extracted.suffix}"
 
-def main(matches_path, labels_path, output_path):
-    with open(matches_path, "r", encoding="utf-8") as f:
-        matches = json.load(f)
+class DomainLabelGenerator:
+    def __init__(self, known_labels: Dict[str, str]):
+        self.known_labels = known_labels
+        self.unclassified_domains: Set[str] = set()
 
-    with open(labels_path, "r", encoding="utf-8") as f:
-        known_labels = json.load(f)
+    @staticmethod
+    def extract_domain(url: str) -> str:
+        """Extract registered domain from URL."""
+        try:
+            extracted = tldextract.extract(url)
+            return f"{extracted.domain}.{extracted.suffix}"
+        except Exception as e:
+            raise ValueError(f"Failed to extract domain from URL: {url} - {e}")
 
-    domains = set()
-    for entry in matches:
-        url = entry.get("source") or entry.get("url")
-        if url:
-            domain = extract_domain(url)
-            domains.add(domain)
+    def process_crawl_data(self, matches: list) -> Dict[str, str]:
+        """Process crawl data and generate domain labels."""
+        domains = set()
+        for entry in matches:
+            url = entry.get("source") or entry.get("url")
+            if url:
+                try:
+                    domain = self.extract_domain(url)
+                    domains.add(domain)
+                except ValueError as e:
+                    print(f"[!] {e}", file=sys.stderr)
 
-    enriched = {}
-    for domain in sorted(domains):
-        enriched[domain] = known_labels.get(domain, "unclassified")
+        enriched = {}
+        for domain in sorted(domains):
+            label = self.known_labels.get(domain, "unclassified")
+            enriched[domain] = label
+            if label == "unclassified":
+                self.unclassified_domains.add(domain)
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(enriched, f, indent=2)
+        return enriched
 
-    print(f"[✓] Generated {len(enriched)} labeled entries at {output_path}")
+    def report_unclassified(self) -> None:
+        """Print report about unclassified domains."""
+        if not self.unclassified_domains:
+            return
 
-if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python generate_source_labels.py <crawl_output.json> <existing_labels.json> <output_new_labels.json>")
+        print(f"\n[!] Found {len(self.unclassified_domains)} unclassified domains:")
+        for domain in sorted(self.unclassified_domains)[:10]:
+            print(f"  - {domain}")
+        if len(self.unclassified_domains) > 10:
+            print(f"  ... and {len(self.unclassified_domains) - 10} more")
+
+
+def load_json_file(path: Path) -> Any:
+    """Load JSON data from file with validation."""
+    if not path.exists():
+        raise FileNotFoundError(f"File not found: {path}")
+    if not path.is_file():
+        raise ValueError(f"Path is not a file: {path}")
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_json_file(data: Any, path: Path) -> None:
+    """Save data to JSON file with directory creation."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def main(input_path: Path, labels_path: Path, output_path: Path) -> None:
+    """Main workflow for generating domain labels."""
+    try:
+        print(f"[+] Loading crawl data from: {input_path}")
+        matches = load_json_file(input_path)
+
+        print(f"[+] Loading existing labels from: {labels_path}")
+        known_labels = load_json_file(labels_path)
+
+        generator = DomainLabelGenerator(known_labels)
+        enriched_labels = generator.process_crawl_data(matches)
+
+        print(f"\n[+] Saving new labels to: {output_path}")
+        save_json_file(enriched_labels, output_path)
+
+        generator.report_unclassified()
+        print(f"\n[✓] Generated {len(enriched_labels)} labeled domains at {output_path}")
+
+    except Exception as e:
+        print(f"\n[✗] Error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    main(sys.argv[1], sys.argv[2], sys.argv[3])
+
+if __name__ == "__main__":
+    DEFAULT_LABELS_PATH = "data/config/source_labels.json"
+    DEFAULT_OUTPUT_PATH = "data/output/new_source_labels.json"
+
+    parser = argparse.ArgumentParser(
+        description="Generate domain labels from crawl data and existing labels",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "--input-path",
+        type=Path,
+        required=True,
+        help="Path to crawl output JSON file"
+    )
+    parser.add_argument(
+        "--labels-path",
+        type=Path,
+        default=DEFAULT_LABELS_PATH,
+        help="Path to existing labels JSON file"
+    )
+    parser.add_argument(
+        "--output-path",
+        type=Path,
+        default=DEFAULT_OUTPUT_PATH,
+        help="Path for output new labels JSON file"
+    )
+    # parser.add_argument(
+    #     "--verbose", "-v",
+    #     action="store_true",
+    #     help="Show detailed error messages"
+    # )
+
+    args = parser.parse_args()
+
+    try:
+        main(args.input_path, args.labels_path, args.output_path)
+    except Exception as e:
+        print(f"\n[✗] Error: {e}", file=sys.stderr)
+        # if args.verbose:
+        #     print("\nStack trace:", file=sys.stderr)
+        #     raise
+        sys.exit(1)

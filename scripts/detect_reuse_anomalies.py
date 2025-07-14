@@ -5,6 +5,7 @@ import json
 import os
 import argparse
 from collections import defaultdict
+from pathlib import Path
 from typing import Dict, List, Any
 
 
@@ -55,36 +56,55 @@ def detect_anomalies(reuse_map: Dict[str, Any], domain_labels: Dict[str, str]) -
     return anomalies
 
 
-def main(input_path: str, labels_path: str, output_path: str) -> None:
-    """Main execution function that loads data, detects anomalies, and saves results."""
-    try:
-        reuse_map = load_json_file(input_path)
-        domain_labels = load_json_file(labels_path)
-        anomalies = detect_anomalies(reuse_map, domain_labels)
-        save_json_file(anomalies, output_path)
-        print(f"[✓] Found {len(anomalies)} suspicious reuse cases. Saved to {output_path}")
-    except Exception as e:
-        print(f"[✗] Error processing files: {e}")
-        raise
+def main():
 
+    DEFAULT_INPUT_PATH = "data/analysis/reuse_map.json"
+    DEFAULT_LABELS_PATH = "data/output/new_source_labels.json"
+    DEFAULT_OUTPUT_PATH = "data/analysis/reuse_anomalies.json"
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Detect content reuse anomalies across domains.")
+    parser = argparse.ArgumentParser(
+        description="Detect content reuse anomalies across domains",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument(
         "--input-path",
-        default="data/analysis/reuse_map.json",
-        help="Path to reuse map JSON file (default: data/analysis/reuse_map.json)"
+        type=Path,
+        default=DEFAULT_INPUT_PATH,
+        help="Path to reuse map JSON file"
     )
     parser.add_argument(
         "--labels-path",
-        default="data/output/new_source_labels.json",
-        help="Path to domain labels JSON file (default: data/output/new_source_labels.json)"
+        type=Path,
+        default=DEFAULT_LABELS_PATH,
+        help="Path to new source labels JSON file"
     )
     parser.add_argument(
         "--output-path",
-        default="data/analysis/reuse_anomalies.json",
-        help="Output path for anomalies JSON (default: data/analysis/reuse_anomalies.json)"
+        type=Path,
+        default=DEFAULT_OUTPUT_PATH,
+        help="Output path for anomalies JSON file"
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Show detailed processing information"
     )
 
     args = parser.parse_args()
-    main(args.input_path, args.labels_path, args.output_path)
+
+    try:
+        reuse_map = load_json_file(args.input_path)
+        domain_labels = load_json_file(args.labels_path)
+        anomalies = detect_anomalies(reuse_map, domain_labels)
+        save_json_file(anomalies, args.output_path)
+        print(f"[✓] Found {len(anomalies)} suspicious reuse cases. Saved to {args.output_path}")
+    except Exception as e:
+        print(f"[✗] Error: {e}", file=sys.stderr)
+        if args.verbose:
+            print("Stack trace:", file=sys.stderr)
+            raise
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

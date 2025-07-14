@@ -11,7 +11,7 @@
 
 ---
 
-## ⚙️ Setup
+## Setup
 
 ```bash
 # Create virtual environment
@@ -24,9 +24,9 @@ pip install -r requirements.txt
 
 ---
 
-## 🔀 Workflow
+## Workflow
 
-### 1. Run the Spider on a Seed Article
+### Run the Spider on a Seed Article
 
 Search and match similar articles using search engines.
 
@@ -34,16 +34,16 @@ Search and match similar articles using search engines.
 PYTHONPATH=src python src/crawler/echo_spider.py \
       "https://www.rt.com/india/617713-west-pitting-india-against-china/" \
       --engine google \
-      --threshold=0.8 \ # Ensures that only articles with 80% or more similarity to the seed article are selected.
-      --delay=10 # Adds a 10 second pause between requests to avoid overwhelming the search engine (esp for duckduckgo, longer delay is required)
+      --threshold=0.8 \
+      --delay=10
 ```
 
-**Output:**
-`data/crawled/matches_google.json` - articles similar to the seed.
+>**Output:** stored at `data/crawled/matches_google.json`<br>
+>**Requires:** a Google API key and CSE ID
 
 ---
 
-### 2. Label Matched Articles Using Known Source Labels
+### Label Matched Articles Using Known Source Labels
 
 Assign credibility labels like `credible`, `state-sponsored`, `conspiratorial` or `unclassified`.
 
@@ -56,7 +56,7 @@ python scripts/enrich_with_labels.py \
 
 ---
 
-### 3. Generate Template for New Domains
+### Generate Template for New Domains
 
 Extract new domains that are not in `source_labels.json` for manual labeling.
 
@@ -77,7 +77,7 @@ python scripts/generate_source_labels.py \
 
 ---
 
-### 4. Compute Domain Reuse Frequency
+### Compute Domain Reuse Frequency
 
 Check which domains are used most frequently across searches.
 
@@ -87,17 +87,7 @@ python scripts/domain_frequency_report.py
 
 ---
 
-### 5. Generate Matched Snippets for Manual Review
-
-Store the first 1000 characters of each matched article for review.
-
-```bash
-python scripts/trace_content_reuse.py
-```
-
----
-
-### 6. Detect Suspicious Reuse Patterns
+### Detect Suspicious Reuse Patterns
 
 Check how often does the reuse pattern appear across multiple sub-domains
 
@@ -106,7 +96,7 @@ python scripts/detect_reuse_anomalies.py
 ```
 
 ---
-### 7. Enrich Domains with WHOIS and Subdomain Info
+### Enrich Domains with WHOIS and Subdomain Info
 
 Fetch **basic** metadata for each domain using
 
@@ -160,7 +150,7 @@ Enriched metadata file example:
 
 ---
 
-## 📝 To-do
+## To-do
 
 - Integrate GDELT search.
 - Better domain enrichment using WHOIS history. Cluster domains by WHOIS fingerprint (same registrar/org/email).
@@ -168,6 +158,6 @@ Enriched metadata file example:
 
 ---
 
-## 🧾 License
+## License
 
 MIT License, see `LICENSE` file.

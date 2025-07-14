@@ -119,35 +119,43 @@ class DomainGraphVisualizer:
 
     def run(self) -> None:
         """Execute the visualization pipeline."""
-        print(f"[+] Loading data from {self.input_path}")
+        print(f"[*] Loading data from {self.input_path}")
         anomalies, labels = self.load_data()
 
-        print("[+] Building network graph")
+        print("[*] Building network graph")
         graph = self.build_network_graph(anomalies)
 
-        print(f"[+] Generating visualization at {self.output_path}")
+        print(f"[*] Generating visualization at {self.output_path}")
         self.visualize_graph(graph, labels)
 
         print(f"[✓] Successfully saved visualization to {self.output_path}")
 
 def main():
+
+    DEFAULT_INPUT_PATH = "data/analysis/reuse_anomalies.json"
+    DEFAULT_LABELS_PATH = "data/output/new_source_labels.json"
+    DEFAULT_OUTPUT_PATH = "data/analysis/domain_reuse_graph.html"
+
     parser = argparse.ArgumentParser(
         description="Visualize domain reuse patterns as interactive network graphs",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
         "--input-path",
-        default="data/analysis/reuse_anomalies.json",
+        type=Path,
+        default=DEFAULT_INPUT_PATH,
         help="Path to anomalies JSON file"
     )
     parser.add_argument(
         "--labels-path",
-        default="data/output/new_source_labels.json",
+        type=Path,
+        default=DEFAULT_LABELS_PATH,
         help="Path to domain labels JSON file"
     )
     parser.add_argument(
         "--output-path",
-        default="data/analysis/domain_reuse_graph.html",
+        type=Path,
+        default=DEFAULT_OUTPUT_PATH,
         help="Output path for HTML visualization"
     )
     parser.add_argument(
@@ -166,9 +174,9 @@ def main():
         )
         visualizer.run()
     except Exception as e:
-        print(f"\n[✗] Error: {e}", file=sys.stderr)
+        print(f"[✗] Error: {e}", file=sys.stderr)
         if args.verbose:
-            print("\nStack trace:", file=sys.stderr)
+            print("Stack trace:", file=sys.stderr)
             raise
         sys.exit(1)
 

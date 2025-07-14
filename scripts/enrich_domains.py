@@ -10,6 +10,7 @@ import requests
 import whois
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from pathlib import Path
 from typing import Dict, List, Optional, Any
 
 
@@ -21,11 +22,13 @@ class DomainEnricher:
         self.last_request_time = 0
         os.makedirs(self.cache_dir, exist_ok=True)
 
+
     def extract_domains(self, input_file: str) -> List[str]:
         """Extract domains from input JSON file."""
         with open(input_file, "r") as f:
             data = json.load(f)
         return list(data.keys())
+
 
     def run_subfinder(self, domain: str) -> List[str]:
         """Run subfinder to discover subdomains."""
@@ -39,6 +42,7 @@ class DomainEnricher:
         except Exception as e:
             print(f"[!] subfinder failed for {domain}: {e}")
             return []
+
 
     def fetch_whois(self, domain: str) -> Dict[str, Any]:
         """Fetch WHOIS information for a domain."""
@@ -57,6 +61,7 @@ class DomainEnricher:
             print(f"[!] WHOIS failed for {domain}: {e}")
             return {}
 
+
     def _load_from_cache(self, cert_id: str) -> Optional[bytes]:
         """Load certificate from cache if exists."""
         path = os.path.join(self.cache_dir, f"{cert_id}.der")
@@ -65,11 +70,13 @@ class DomainEnricher:
                 return f.read()
         return None
 
+
     def _save_to_cache(self, cert_id: str, content: bytes) -> None:
         """Save certificate to cache."""
         path = os.path.join(self.cache_dir, f"{cert_id}.der")
         with open(path, "wb") as f:
             f.write(content)
+
 
     def _download_cert(self, cert_id: str) -> Optional[bytes]:
         """Download certificate from crt.sh with rate limiting."""
@@ -98,6 +105,7 @@ class DomainEnricher:
             print(f"[!] Request failed for cert {cert_id}: {e}")
         return None
 
+
     def _extract_san(self, cert: x509.Certificate) -> List[str]:
         """Extract Subject Alternative Names from certificate."""
         try:
@@ -105,6 +113,7 @@ class DomainEnricher:
             return san.value.get_values_for_type(x509.DNSName)
         except x509.ExtensionNotFound:
             return []
+
 
     def _parse_cert(self, content: bytes) -> Optional[Dict[str, Any]]:
         """Parse certificate content."""
@@ -125,6 +134,7 @@ class DomainEnricher:
         except Exception as e:
             print(f"[!] Failed to parse cert: {e}")
             return None
+
 
     def fetch_crtsh(self, domain: str) -> List[Dict[str, Any]]:
         """Fetch certificate information from crt.sh."""
@@ -165,6 +175,7 @@ class DomainEnricher:
             print(f"[!] crt.sh lookup failed for {domain}: {e}")
             return []
 
+
     def enrich_domain(self, domain: str) -> Dict[str, Any]:
         """Enrich domain with subdomains, certificates, and WHOIS data."""
         print(f"[*] Enriching: {domain}")
@@ -173,6 +184,7 @@ class DomainEnricher:
             "crtsh_certificates": self.fetch_crtsh(domain),
             "whois": self.fetch_whois(domain)
         }
+
 
     def generate_reverse_san_index(self, enriched_data: Dict[str, Any]) -> Dict[str, Any]:
         """Generate reverse index of SAN domains."""
@@ -193,66 +205,79 @@ class DomainEnricher:
         return reverse_index
 
 
-def main(input_path: str, output_dir: str, cache_dir: str, rate_limit: int, max_certs: int) -> None:
-    """Main execution function."""
-    os.makedirs(output_dir, exist_ok=True)
-    enricher = DomainEnricher(cache_dir, rate_limit, max_certs)
+def main():
 
-    print(f"[*] Processing domains from {input_path}")
-    domains = enricher.extract_domains(input_path)
-    enriched = {}
+    DEFAULT_INPUT_PATH = "data/output/new_source_labels.json"
+    DEFAULT_OUTPUT_DIR = "data/enrichment"
+    DEFAULT_CACHE_DIR = ".cache/certs"
+    DEFAULT_RATE_LIMIT = 12
+    DEFAULT_MAX_CERTS = 3
 
-    for domain in domains:
-        enriched[domain] = enricher.enrich_domain(domain)
-        time.sleep(2)
-
-    output_file = os.path.join(output_dir, "domain_enrichment.json")
-    with open(output_file, "w") as f:
-        json.dump(enriched, f, indent=2)
-    print(f"[✓] Enrichment complete. Saved to {output_file}")
-
-    reverse_index = enricher.generate_reverse_san_index(enriched)
-    reverse_index_file = os.path.join(output_dir, "reverse_san_index.json")
-    with open(reverse_index_file, "w") as f:
-        json.dump(reverse_index, f, indent=2)
-    print(f"[✓] Reverse SAN index saved to {reverse_index_file}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Domain enrichment tool")
+    parser = argparse.ArgumentParser(
+        description="Domain enrichment tool to gather WHOIS, subdomains, and certificate data",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument(
         "--input-path",
-        default="data/output/new_source_labels.json",
-        help="Input JSON file containing domains (default: data/output/new_source_labels.json)"
+        type=Path,
+        default=DEFAULT_INPUT_PATH,
+        help="Input JSON file containing domains"
     )
     parser.add_argument(
         "--output-dir",
-        default="data/enrichment",
-        help="Output directory for results (default: data/enrichment)"
+        type=Path,
+        default=DEFAULT_OUTPUT_DIR,
+        help="Output directory for JSON file enrichment results"
     )
     parser.add_argument(
         "--cache-dir",
-        default=".cache/certs",
-        help="Certificate cache directory (default: .cache/certs)"
+        type=Path,
+        default=DEFAULT_CACHE_DIR,
+        help="Certificate cache directory"
     )
     parser.add_argument(
         "--rate-limit",
         type=int,
-        default=12,
-        help="Rate limit delay in seconds (default: 12)"
+        default=DEFAULT_RATE_LIMIT,
+        help="Rate limit delay in seconds"
     )
     parser.add_argument(
         "--max-certs",
         type=int,
-        default=1,
-        help="Max certificates to fetch per domain (default: 1)"
+        default=DEFAULT_MAX_CERTS,
+        help="Max certificates to fetch per domain"
     )
 
     args = parser.parse_args()
-    main(
-        args.input_path,
-        args.output_dir,
-        args.cache_dir,
-        args.rate_limit,
-        args.max_certs
-    )
+    try:
+        os.makedirs(args.output_dir, exist_ok=True)
+        enricher = DomainEnricher(args.cache_dir, args.rate_limit, args.max_certs)
+
+        print(f"[*] Processing domains from {args.input_path}")
+        domains = enricher.extract_domains(args.input_path)
+        enriched = {}
+
+        for domain in domains:
+            enriched[domain] = enricher.enrich_domain(domain)
+            time.sleep(2)
+
+        output_file = os.path.join(args.output_dir, "domain_enrichment.json")
+        with open(output_file, "w") as f:
+            json.dump(enriched, f, indent=2)
+        print(f"[✓] Enrichment complete. Saved to {output_file}")
+
+        reverse_index = enricher.generate_reverse_san_index(enriched)
+        reverse_index_file = os.path.join(args.output_dir, "reverse_san_index.json")
+        with open(reverse_index_file, "w") as f:
+            json.dump(reverse_index, f, indent=2)
+        print(f"[✓] Reverse SAN index saved to {reverse_index_file}")
+    except Exception as e:
+        print(f"[✗] Error: {e}", file=sys.stderr)
+        if args.verbose:
+            print("Stack trace:", file=sys.stderr)
+            raise
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

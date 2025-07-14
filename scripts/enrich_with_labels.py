@@ -48,6 +48,7 @@ class DataEnricher:
         self.labels = labels
         self.unmatched_domains: Set[str] = set()
 
+
     def process_entry(self, entry: Dict[str, Any]) -> Dict[str, Any]:
         """Add label to a single crawl entry."""
         try:
@@ -69,6 +70,7 @@ class DataEnricher:
             entry["label"] = "error"
             return entry
 
+
     def report_unmatched(self) -> None:
         """Print warning about unmatched domains."""
         if not self.unmatched_domains:
@@ -78,7 +80,7 @@ class DataEnricher:
         print("Top 10 unmatched domains:")
         for domain in sorted(list(self.unmatched_domains))[:10]:
             print(f"  - {domain}")
-        print("\nConsider adding these to your labels file for better classification.")
+        print("\nConsider adding these to your source labels file for better classification in the future.")
 
 
 def enrich_with_labels(input_path: str, labels_path: str, output_path: str) -> None:
@@ -90,19 +92,19 @@ def enrich_with_labels(input_path: str, labels_path: str, output_path: str) -> N
         if not Path(labels_path).exists():
             raise FileNotFoundError(f"Labels file not found: {labels_path}")
 
-        print(f"[+] Loading crawl data from: {input_path}")
+        print(f"[*] Loading crawl data from: {input_path}")
         crawl_data = load_json(input_path)
 
-        print(f"[+] Loading source labels from: {labels_path}")
+        print(f"[*] Loading source labels from: {labels_path}")
         source_labels = load_json(labels_path)
 
-        print("\n[+] Processing entries...")
+        print("\n[*] Processing entries...")
         enricher = DataEnricher(source_labels)
         crawl_data = [enricher.process_entry(entry) for entry in crawl_data]
 
         enricher.report_unmatched()
 
-        print(f"\n[+] Saving enriched data to: {output_path}")
+        print(f"\n[*] Saving enriched data to: {output_path}")
         save_json(crawl_data, output_path)
         print("[✓] Enrichment completed successfully")
 
@@ -111,6 +113,7 @@ def enrich_with_labels(input_path: str, labels_path: str, output_path: str) -> N
 
 
 def main():
+
     DEFAULT_LABELS_PATH = "data/config/source_labels.json"
 
     parser = argparse.ArgumentParser(
@@ -132,6 +135,11 @@ def main():
         required=True,
         help='Path for output JSON file (e.g. data/output/matches_google_labeled.json)'
     )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Show detailed processing information"
+    )
 
     args = parser.parse_args()
 
@@ -139,6 +147,9 @@ def main():
         enrich_with_labels(args.input_path, args.labels_path, args.output_path)
     except Exception as e:
         print(f"\n[✗] Error: {e}", file=sys.stderr)
+        if args.verbose:
+            print("Stack trace:", file=sys.stderr)
+            raise
         sys.exit(1)
 
 

@@ -4,6 +4,7 @@
 import os
 import json
 from collections import Counter
+from pathlib import Path
 import tldextract
 import argparse
 
@@ -55,26 +56,47 @@ def save_report(counter: Counter, output_path: str) -> None:
         json.dump(dict(counter.most_common()), f, indent=2)
 
 
-def main(input_dir: str, output_path: str) -> None:
-    """Main function to process crawled data and generate report."""
-    print(f"[*] Analyzing domain frequency in {input_dir}...")
-    domain_counts = load_labeled_urls(input_dir)
-    save_report(domain_counts, output_path)
-    print(f"[✓] Saved domain frequency report to {output_path}")
+def main():
 
+    DEFAULT_INPUT_DIR="data/output"
+    DEFAULT_OUTPUT_PATH="data/output/domain_frequency_report.json"
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Analyze domain frequency from crawled data.")
+    parser = argparse.ArgumentParser(
+        description="Analyze domain frequency from crawled data",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument(
         "--input-dir",
-        default="data/output",
-        help="Directory containing crawled JSON files (default: data/output)"
+        type=Path,
+        default=DEFAULT_INPUT_DIR,
+        help="Directory containing crawled JSON files"
     )
     parser.add_argument(
         "--output-path",
-        default="data/output/domain_frequency_report.json",
-        help="Output file path (default: data/output/domain_frequency_report.json)"
+        type=Path,
+        default=DEFAULT_OUTPUT_PATH,
+        help="Output JSON file path for the generated report"
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Show detailed processing information"
     )
 
     args = parser.parse_args()
-    main(args.input_dir, args.output_path)
+
+    try:
+        print(f"[*] Analyzing domain frequency in {args.input_dir}...")
+        domain_counts = load_labeled_urls(args.input_dir)
+        save_report(domain_counts, args.output_path)
+        print(f"[✓] Saved domain frequency report to {args.output_path}")
+    except Exception as e:
+        print(f"[✗] Error: {e}", file=sys.stderr)
+        if args.verbose:
+            print("Stack trace:", file=sys.stderr)
+            raise
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

@@ -12,13 +12,11 @@ from urllib.parse import urlparse
 from typing import Dict, List, Any
 from glob import glob
 
-
 class ContentReuseAnalyzer:
     def __init__(self, input_dir: str, output_path: str):
         self.input_dir = Path(input_dir)
         self.output_path = Path(output_path)
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
-
 
     @staticmethod
     def normalize_domain(url: str) -> str:
@@ -29,12 +27,10 @@ class ContentReuseAnalyzer:
         except (ValueError, AttributeError):
             return ""
 
-
     @staticmethod
     def generate_content_hash(text: str) -> str:
         """Generate SHA256 hash of text content."""
         return hashlib.sha256(text[:1000].encode("utf-8")).hexdigest()
-
 
     def process_file(self, file_path: Path) -> List[Dict[str, Any]]:
         """Process a single crawled file and extract entries."""
@@ -44,7 +40,6 @@ class ContentReuseAnalyzer:
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             print(f"[!] Error processing {file_path.name}: {e}")
             return []
-
 
     def build_reuse_map(self) -> Dict[str, Dict[str, Any]]:
         """Build a map of content hashes to their sources."""
@@ -80,12 +75,10 @@ class ContentReuseAnalyzer:
 
         return reuse_map
 
-
     def save_results(self, reuse_data: Dict[str, Any]) -> None:
         """Save the reuse map to JSON file."""
         with open(self.output_path, "w", encoding="utf-8") as f:
             json.dump(reuse_data, f, indent=2, ensure_ascii=False)
-
 
     def run(self) -> None:
         """Execute the analysis pipeline."""
@@ -94,9 +87,7 @@ class ContentReuseAnalyzer:
         self.save_results(reuse_data)
         print(f"[✓] Saved reuse map with {len(reuse_data)} unique content hashes to {self.output_path}")
 
-
 def main():
-
     DEFAULT_INPUT_DIR = "data/output"
     DEFAULT_OUTPUT_PATH = "data/analysis/reuse_map.json"
 
@@ -133,7 +124,6 @@ def main():
             print("\nStack trace:", file=sys.stderr)
             raise
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

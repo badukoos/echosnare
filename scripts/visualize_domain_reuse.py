@@ -68,7 +68,6 @@ class DomainGraphVisualizer:
             cdn_resources="in_line"
         )
 
-        # Add nodes with styling
         for node in G.nodes:
             label_type = labels.get(node, "unclassified")
             net.add_node(
@@ -79,11 +78,9 @@ class DomainGraphVisualizer:
                 size=15
             )
 
-        # Add edges
         for edge in G.edges:
             net.add_edge(edge[0], edge[1], width=0.5)
 
-        # Configure physics for better layout
         net.set_options("""
         {
             "nodes": {
@@ -114,7 +111,6 @@ class DomainGraphVisualizer:
         }
         """)
 
-        # Save the network
         net.save_graph(str(self.output_path))
 
     def run(self) -> None:
@@ -131,7 +127,6 @@ class DomainGraphVisualizer:
         print(f"[✓] Successfully saved visualization to {self.output_path}")
 
 def main():
-
     DEFAULT_INPUT_PATH = "data/analysis/reuse_anomalies.json"
     DEFAULT_LABELS_PATH = "data/output/new_source_labels.json"
     DEFAULT_OUTPUT_PATH = "data/analysis/domain_reuse_graph.html"

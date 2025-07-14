@@ -11,12 +11,10 @@ from pathlib import Path
 from typing import Dict, Set, Any
 import tldextract
 
-
 class DomainLabelGenerator:
     def __init__(self, known_labels: Dict[str, str]):
         self.known_labels = known_labels
         self.unclassified_domains: Set[str] = set()
-
 
     @staticmethod
     def extract_domain(url: str) -> str:
@@ -26,7 +24,6 @@ class DomainLabelGenerator:
             return f"{extracted.domain}.{extracted.suffix}"
         except Exception as e:
             raise ValueError(f"Failed to extract domain from URL: {url} - {e}")
-
 
     def process_crawl_data(self, matches: list) -> Dict[str, str]:
         """Process crawl data and generate domain labels."""
@@ -49,7 +46,6 @@ class DomainLabelGenerator:
 
         return enriched
 
-
     def report_unclassified(self) -> None:
         """Print report about unclassified domains."""
         if not self.unclassified_domains:
@@ -61,7 +57,6 @@ class DomainLabelGenerator:
         if len(self.unclassified_domains) > 10:
             print(f"  ... and {len(self.unclassified_domains) - 10} more")
 
-
 def load_json_file(path: Path) -> Any:
     """Load JSON data from file with validation."""
     if not path.exists():
@@ -71,16 +66,13 @@ def load_json_file(path: Path) -> Any:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-
 def save_json_file(data: Any, path: Path) -> None:
     """Save data to JSON file with directory creation."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-
 def main():
-
     DEFAULT_LABELS_PATH = "data/config/source_labels.json"
     DEFAULT_OUTPUT_PATH = "data/output/new_source_labels.json"
 
@@ -136,7 +128,6 @@ def main():
             print("Stack trace:", file=sys.stderr)
             raise
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

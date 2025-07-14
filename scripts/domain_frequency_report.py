@@ -8,7 +8,6 @@ from pathlib import Path
 import tldextract
 import argparse
 
-
 def extract_domain(url: str) -> str:
     """Extract domain from URL using tldextract."""
     try:
@@ -16,7 +15,6 @@ def extract_domain(url: str) -> str:
         return f"{extracted.domain}.{extracted.suffix}"
     except Exception:
         return None
-
 
 def load_labeled_urls(directory: str) -> Counter:
     """Load and count domains from all JSON files that ends with 'labled'"""
@@ -48,16 +46,13 @@ def load_labeled_urls(directory: str) -> Counter:
 
     return domain_counter
 
-
 def save_report(counter: Counter, output_path: str) -> None:
     """Save domain frequency report as JSON."""
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(dict(counter.most_common()), f, indent=2)
 
-
 def main():
-
     DEFAULT_INPUT_DIR="data/output"
     DEFAULT_OUTPUT_PATH="data/output/domain_frequency_report.json"
 
@@ -96,7 +91,6 @@ def main():
             print("Stack trace:", file=sys.stderr)
             raise
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

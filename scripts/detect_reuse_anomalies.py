@@ -8,19 +8,16 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Any
 
-
 def load_json_file(file_path: str) -> Dict[str, Any]:
     """Load JSON data from a file."""
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
-
 
 def save_json_file(data: Any, file_path: str) -> None:
     """Save data to a JSON file, creating parent directories if needed."""
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-
 
 def detect_anomalies(reuse_map: Dict[str, Any], domain_labels: Dict[str, str]) -> List[Dict[str, Any]]:
     """Analyze content reuse patterns and detect anomalies."""
@@ -55,9 +52,7 @@ def detect_anomalies(reuse_map: Dict[str, Any], domain_labels: Dict[str, str]) -
 
     return anomalies
 
-
 def main():
-
     DEFAULT_INPUT_PATH = "data/analysis/reuse_map.json"
     DEFAULT_LABELS_PATH = "data/output/new_source_labels.json"
     DEFAULT_OUTPUT_PATH = "data/analysis/reuse_anomalies.json"
@@ -104,7 +99,6 @@ def main():
             print("Stack trace:", file=sys.stderr)
             raise
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

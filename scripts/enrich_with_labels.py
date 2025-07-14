@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Dict, List, Set, Any
 import tldextract
 
-
 def load_json(path: str) -> Any:
     """Load JSON data from file."""
     path_obj = Path(path)
@@ -19,7 +18,6 @@ def load_json(path: str) -> Any:
         raise ValueError(f"Path is not a file: {path}")
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
-
 
 def save_json(data: Any, path: str) -> None:
     """Save data to JSON file."""
@@ -33,7 +31,6 @@ def save_json(data: Any, path: str) -> None:
     except Exception as e:
         raise Exception(f"Failed to save output: {e}")
 
-
 def extract_domain(url: str) -> str:
     """Extract registered domain from URL."""
     try:
@@ -42,12 +39,10 @@ def extract_domain(url: str) -> str:
     except Exception as e:
         raise ValueError(f"Failed to extract domain from URL: {url} - {e}")
 
-
 class DataEnricher:
     def __init__(self, labels: Dict[str, str]):
         self.labels = labels
         self.unmatched_domains: Set[str] = set()
-
 
     def process_entry(self, entry: Dict[str, Any]) -> Dict[str, Any]:
         """Add label to a single crawl entry."""
@@ -70,7 +65,6 @@ class DataEnricher:
             entry["label"] = "error"
             return entry
 
-
     def report_unmatched(self) -> None:
         """Print warning about unmatched domains."""
         if not self.unmatched_domains:
@@ -81,7 +75,6 @@ class DataEnricher:
         for domain in sorted(list(self.unmatched_domains))[:10]:
             print(f"  - {domain}")
         print("\nConsider adding these to your source labels file for better classification in the future.")
-
 
 def enrich_with_labels(input_path: str, labels_path: str, output_path: str) -> None:
     """Main enrichment workflow."""
@@ -111,9 +104,7 @@ def enrich_with_labels(input_path: str, labels_path: str, output_path: str) -> N
     except Exception as e:
         raise Exception(f"Enrichment failed: {e}")
 
-
 def main():
-
     DEFAULT_LABELS_PATH = "data/config/source_labels.json"
 
     parser = argparse.ArgumentParser(
@@ -151,7 +142,6 @@ def main():
             print("Stack trace:", file=sys.stderr)
             raise
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

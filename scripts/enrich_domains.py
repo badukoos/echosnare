@@ -13,7 +13,6 @@ from cryptography.hazmat.backends import default_backend
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
-
 class DomainEnricher:
     def __init__(self, cache_dir: str = ".cache/certs", rate_limit_delay: int = 12, max_certs: int = 1):
         self.cache_dir = cache_dir
@@ -22,13 +21,11 @@ class DomainEnricher:
         self.last_request_time = 0
         os.makedirs(self.cache_dir, exist_ok=True)
 
-
     def extract_domains(self, input_file: str) -> List[str]:
         """Extract domains from input JSON file."""
         with open(input_file, "r") as f:
             data = json.load(f)
         return list(data.keys())
-
 
     def run_subfinder(self, domain: str) -> List[str]:
         """Run subfinder to discover subdomains."""
@@ -42,7 +39,6 @@ class DomainEnricher:
         except Exception as e:
             print(f"[!] subfinder failed for {domain}: {e}")
             return []
-
 
     def fetch_whois(self, domain: str) -> Dict[str, Any]:
         """Fetch WHOIS information for a domain."""
@@ -61,7 +57,6 @@ class DomainEnricher:
             print(f"[!] WHOIS failed for {domain}: {e}")
             return {}
 
-
     def _load_from_cache(self, cert_id: str) -> Optional[bytes]:
         """Load certificate from cache if exists."""
         path = os.path.join(self.cache_dir, f"{cert_id}.der")
@@ -70,13 +65,11 @@ class DomainEnricher:
                 return f.read()
         return None
 
-
     def _save_to_cache(self, cert_id: str, content: bytes) -> None:
         """Save certificate to cache."""
         path = os.path.join(self.cache_dir, f"{cert_id}.der")
         with open(path, "wb") as f:
             f.write(content)
-
 
     def _download_cert(self, cert_id: str) -> Optional[bytes]:
         """Download certificate from crt.sh with rate limiting."""
@@ -105,7 +98,6 @@ class DomainEnricher:
             print(f"[!] Request failed for cert {cert_id}: {e}")
         return None
 
-
     def _extract_san(self, cert: x509.Certificate) -> List[str]:
         """Extract Subject Alternative Names from certificate."""
         try:
@@ -113,7 +105,6 @@ class DomainEnricher:
             return san.value.get_values_for_type(x509.DNSName)
         except x509.ExtensionNotFound:
             return []
-
 
     def _parse_cert(self, content: bytes) -> Optional[Dict[str, Any]]:
         """Parse certificate content."""
@@ -134,7 +125,6 @@ class DomainEnricher:
         except Exception as e:
             print(f"[!] Failed to parse cert: {e}")
             return None
-
 
     def fetch_crtsh(self, domain: str) -> List[Dict[str, Any]]:
         """Fetch certificate information from crt.sh."""
@@ -175,7 +165,6 @@ class DomainEnricher:
             print(f"[!] crt.sh lookup failed for {domain}: {e}")
             return []
 
-
     def enrich_domain(self, domain: str) -> Dict[str, Any]:
         """Enrich domain with subdomains, certificates, and WHOIS data."""
         print(f"[*] Enriching: {domain}")
@@ -184,7 +173,6 @@ class DomainEnricher:
             "crtsh_certificates": self.fetch_crtsh(domain),
             "whois": self.fetch_whois(domain)
         }
-
 
     def generate_reverse_san_index(self, enriched_data: Dict[str, Any]) -> Dict[str, Any]:
         """Generate reverse index of SAN domains."""
@@ -204,9 +192,7 @@ class DomainEnricher:
                     })
         return reverse_index
 
-
 def main():
-
     DEFAULT_INPUT_PATH = "data/output/new_source_labels.json"
     DEFAULT_OUTPUT_DIR = "data/enrichment"
     DEFAULT_CACHE_DIR = ".cache/certs"
@@ -277,7 +263,6 @@ def main():
             print("Stack trace:", file=sys.stderr)
             raise
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

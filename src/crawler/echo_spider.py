@@ -5,9 +5,6 @@ This script accepts a seed url and then
   - generates short sentences for search then searches on the chosen engine
   - fetches candidate articles and checks text similarity to find likely echoes and reposts
 """
-
-from __future__ import annotations
-
 import argparse
 import time
 import os
